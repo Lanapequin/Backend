@@ -17,4 +17,5 @@ public interface ReservationRepository extends MongoRepository<Reservation, Stri
 
     List<Reservation> findByStartDateTimeGreaterThanEqualAndEndDateTimeLessThanEqual(
             LocalDateTime start, LocalDateTime end);
+
 }
