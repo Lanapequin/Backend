@@ -14,6 +14,13 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
+
+    @PostMapping
+    public Reservation createReservation(@RequestBody Reservation reservation) {
+        return reservationService.createReservation(reservation);
+    }
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelReservation(@PathVariable String id) {
         boolean cancelled = reservationService.cancelReservation(id);
