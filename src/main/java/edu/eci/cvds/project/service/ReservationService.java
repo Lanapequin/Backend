@@ -1,5 +1,6 @@
 package edu.eci.cvds.project.service;
 
+import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +20,12 @@ public class ReservationService {
         return reservationRepository.findAll();
     }
 
-
     public Reservation createReservation(Reservation reservation) {
-        return reservationRepository.save(reservation);
+        if (isLaboratoryAvilable(reservation.getLaboratory(), reservation.getStartDateTime(), reservation.getEndDateTime())){
+            return reservationRepository.save(reservation);
+        } else {
+            throw new IllegalArgumentException("Laboratory is not available during the given time.");
+        }
     }
 
     public boolean cancelReservation(String id) {
@@ -35,5 +39,19 @@ public class ReservationService {
 
     public List<Reservation> getReservationsInRange(LocalDateTime start, LocalDateTime end) {
         return reservationRepository.findByStartDateTimeGreaterThanEqualAndEndDateTimeLessThanEqual(start, end);
+    }
+
+
+    private boolean isLaboratoryAvilable(Laboratory laboratory, LocalDateTime start, LocalDateTime end) {
+        List<Reservation> reservations = reservationRepository.findByLaboratory(laboratory);
+
+        for (Reservation reservation : reservations) {
+            LocalDateTime existingStart = reservation.getStartDateTime();
+            LocalDateTime existingEnd = reservation.getEndDateTime();
+            if (start.isBefore(existingEnd) && end.isAfter(existingStart)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

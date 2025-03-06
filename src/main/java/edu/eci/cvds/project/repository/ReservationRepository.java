@@ -1,5 +1,6 @@
 package edu.eci.cvds.project.repository;
 
+import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,8 @@ public interface ReservationRepository extends MongoRepository<Reservation, Stri
     List<Reservation> findByLaboratoryId(String laboratoryId);
 
     List<Reservation> findByUser(String user);
+
+    List<Reservation> findByLaboratory(Laboratory laboratory);
 
     List<Reservation> findByStartDateTimeAfter(LocalDateTime startDateTime);
 
