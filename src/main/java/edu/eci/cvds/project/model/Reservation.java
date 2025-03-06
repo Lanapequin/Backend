@@ -1,63 +1,31 @@
 package edu.eci.cvds.project.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
 @Document(collection = "Reservation")
 public class Reservation {
     @Id
     private String id;
-    private String laboratoryId;
-    private String userId;
+    private Laboratory laboratory;
+    private User user;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private String purpose;
+    private boolean status;
 
     public Reservation() {}
 
-    public Reservation(String laboratoryId, String user, LocalDateTime startDateTime, LocalDateTime endDateTime, String purpose) {
-        this.laboratoryId = laboratoryId;
-        this.userId = user;
+    public Reservation(Laboratory laboratory, User user, LocalDateTime startDateTime, LocalDateTime endDateTime, String purpose,boolean status) {
+        this.laboratory = laboratory;
+        this.user = user;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.purpose = purpose;
-    }
-
-    public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
-    public String getLaboratoryId() {
-        return laboratoryId;
-    }
-    public void setLaboratoryId(String laboratoryId) {
-        this.laboratoryId = laboratoryId;
-    }
-    public String getUser() {
-        return userId;
-    }
-    public void setUser(String user) {
-        this.userId = user;
-    }
-    public LocalDateTime getStartDateTime() {
-        return startDateTime;
-    }
-    public void setStartDateTime(LocalDateTime startDateTime) {
-        this.startDateTime = startDateTime;
-    }
-    public LocalDateTime getEndDateTime() {
-        return endDateTime;
-    }
-    public void setEndDateTime(LocalDateTime endDateTime) {
-        this.endDateTime = endDateTime;
-    }
-    public String getPurpose() {
-        return purpose;
-    }
-    public void setPurpose(String purpose) {
-        this.purpose = purpose;
+        this.status = status;
     }
 }
