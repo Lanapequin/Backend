@@ -23,8 +23,19 @@ public class LaboratoryService {
     public Optional<Laboratory> getLaboratoryById(String id) {
         return laboratoryRepository.findById(id);
     }
+
     public Laboratory saveLaboratory(Laboratory laboratory) {
         return laboratoryRepository.save(laboratory);
     }
 
+    public boolean isLaboratoryAvailable(Laboratory laboratory, LocalDateTime localDateTime) {
+        for(Reservation reservation : laboratory.getReservations()){
+            LocalDateTime start = reservation.getStartDateTime();
+            LocalDateTime end = reservation.getEndDateTime();
+            if (!localDateTime.isBefore(start) && !localDateTime.isAfter(end)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
