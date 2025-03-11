@@ -1,12 +1,16 @@
 package edu.eci.cvds.project.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
+import java.util.Optional;
+
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@ToString
 @Document(collection = "Reservation")
 public class Reservation {
     @Id
@@ -16,16 +20,9 @@ public class Reservation {
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private String purpose;
-    private boolean status;
+    private boolean Status;
 
-    public Reservation() {}
-
-    public Reservation(Laboratory laboratory, User user, LocalDateTime startDateTime, LocalDateTime endDateTime, String purpose,boolean status) {
-        this.laboratory = laboratory;
-        this.user = user;
-        this.startDateTime = startDateTime;
-        this.endDateTime = endDateTime;
-        this.purpose = purpose;
-        this.status = status;
+    public boolean getStatus() {
+        return Status;
     }
 }
