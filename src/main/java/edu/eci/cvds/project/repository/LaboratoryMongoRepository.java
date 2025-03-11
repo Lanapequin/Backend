@@ -28,7 +28,7 @@ public interface LaboratoryMongoRepository extends MongoRepository<Laboratory, S
      * de laboratorio. El valor generado es una cadena de caracteres representando un UUID.
      * @return un identificador único generado de forma aleatoria como una cadena de texto.
      */
-    private String generateId() {
+    default String generateId() {
         return UUID.randomUUID().toString();
     }
 
