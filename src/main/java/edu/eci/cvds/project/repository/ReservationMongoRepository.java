@@ -2,6 +2,9 @@ package edu.eci.cvds.project.repository;
 
 import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
+import edu.eci.cvds.project.model.User;
+import edu.eci.cvds.project.repository.porsilas.UserRepository;
+import org.springframework.boot.jackson.JsonMixinModuleEntries;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -13,12 +16,13 @@ import java.util.UUID;
 @Repository
 public interface ReservationMongoRepository extends MongoRepository<Reservation, String> {
 
+
     /**
      * Encuentra todas las reservas asociadas a un laboratorio específico.
-     * @param laboratory El laboratorio a buscar.
+     * @param laboratoryname El laboratorio a buscar.
      * @return Lista de reservas del laboratorio.
      */
-    List<Reservation> findByLaboratory(Laboratory laboratory);
+    List<Reservation> findByLaboratoryname(String laboratoryname);
 
     /**
      * Encuentra todas las reservas que comienzan después de una fecha específica.
@@ -39,7 +43,7 @@ public interface ReservationMongoRepository extends MongoRepository<Reservation,
      * Obtiene todas las reservas.
      * @return Lista de todas las reservas.
      */
-    public default List<Reservation> findAllReservations(){
+    default List<Reservation> findAllReservations(){
         return findAll();
     }
 
@@ -49,16 +53,14 @@ public interface ReservationMongoRepository extends MongoRepository<Reservation,
      * @param reservation Reserva a guardar.
      * @return La reserva guardada.
      */
-    public default Reservation saveReservation(Reservation reservation) {
-        reservation.setStatus(false);
-        reservation.setEndDateTime(null);
-        reservation.setStartDateTime(LocalDateTime.now());
+    default Reservation saveReservation(Reservation reservation) {
         if(reservation.getId() == null){
             reservation.setId(generateId());
         }
         save(reservation);
         return reservation;
     }
+
 
     /**
      * Genera un identificador único para una reserva utilizando UUID.
@@ -73,7 +75,7 @@ public interface ReservationMongoRepository extends MongoRepository<Reservation,
      * @return true si existe, false en caso contrario.
      */
     @Override
-    public default boolean existsById(String id) {
+    default boolean existsById(String id) {
         return findById(id).isPresent();
     }
     /**
@@ -92,7 +94,7 @@ public interface ReservationMongoRepository extends MongoRepository<Reservation,
      * @param id Identificador de la reserva.
      * @return La reserva encontrada o null si no existe.
      */
-    public default Reservation findReservationById(String id) {
+    default Reservation findReservationById(String id) {
         return findById(id).orElse(null);
     }
 
@@ -101,11 +103,19 @@ public interface ReservationMongoRepository extends MongoRepository<Reservation,
      * @param reservation Reserva a eliminar.
      * @throws RuntimeException Si la reserva no se encuentra.
      */
-    public default void deleteReservation(Reservation reservation){
+    default void deleteReservation(Reservation reservation){
         if(!existsById(reservation.getId())){
             throw new RuntimeException("Reservation not found");
         }
         delete(reservation);
+    }
+
+    default Reservation updateReservation(Reservation reservation){
+        if(!existsById(reservation.getId())){
+            throw new RuntimeException("reservation not found");
+        }
+        save(reservation);
+        return reservation;
     }
 
 }

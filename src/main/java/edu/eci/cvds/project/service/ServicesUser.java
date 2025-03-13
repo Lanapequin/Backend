@@ -16,5 +16,6 @@ public interface ServicesUser {
     User save(UserDTO user);
     User getUserById(String id);
     void deleteUser(String id);
+    User updateUser(User user);
 
 }

@@ -3,8 +3,12 @@ import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -80,15 +84,17 @@ public interface UserMongoRepository extends MongoRepository<User, String> {
         if (!existsById(user.getId())) {
             throw new RuntimeException("User not found");
         }
+        user.setReservations(user.getReservations());
         save(user);
         return user;
     }
 
-    /**
-     * Busca un usuario por su nombre de usuario.
-     * @param username Nombre de usuario.
-     * @return El usuario encontrado.
-     */
+//    /**
+//     * Busca un usuario por su nombre de usuario.
+//     * @param username Nombre de usuario.
+//     * @return El usuario encontrado.
+//     */
+    @Query("{ 'username' : ?0 }")
     User findUserByUsername(String username);
 
     /**

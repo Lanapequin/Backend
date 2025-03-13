@@ -36,11 +36,21 @@ public class LaboratoryController {
      * @param id Identificador del laboratorio.
      * @return ResponseEntity con el laboratorio encontrado o un estado 404 si no existe.
      */
-    @GetMapping("/{id}")
+    @GetMapping("id/{id}")
     public ResponseEntity<Laboratory> getLaboratoryById(@PathVariable String id) {
         Optional<Laboratory> laboratory = laboratoryService.getLaboratoryById(id);
         if (laboratory.isPresent()) {
             return ResponseEntity.ok(laboratory.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("name/{name}")
+    public ResponseEntity<Laboratory> getLaboratoryByName(@PathVariable String name) {
+        Laboratory laboratory = laboratoryService.getLaboratoryByName(name);
+        if (laboratory != null) {
+            return ResponseEntity.ok(laboratory);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -51,7 +61,7 @@ public class LaboratoryController {
      * @param laboratoryDTO Objeto Laboratory recibido en la solicitud.
      * @return ResponseEntity con el laboratorio creado.
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Laboratory> createLaboratory(@RequestBody LaboratoryDTO laboratoryDTO) {
         Laboratory created = laboratoryService.saveLaboratory(laboratoryDTO);
         return ResponseEntity.ok(created);
@@ -63,7 +73,7 @@ public class LaboratoryController {
      * @param dateTimeString Fecha y hora en formato de cadena.
      * @return ResponseEntity con un mensaje indicando si está disponible o no.
      */
-    @GetMapping("/{id}/availability")
+    @GetMapping("avaiable/{id}")
     public ResponseEntity<String> checkLaboratoryAvailability(@PathVariable String id, @RequestParam("dateTime") String dateTimeString) {
         LocalDateTime dateTime = LocalDateTime.parse(dateTimeString);
         Optional<Laboratory> laboratoryOpt = laboratoryService.getLaboratoryById(id);

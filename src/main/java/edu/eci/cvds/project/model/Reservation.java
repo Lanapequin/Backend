@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @NoArgsConstructor
@@ -15,7 +16,7 @@ import java.util.Optional;
 public class Reservation {
     @Id
     private String id;
-    private Laboratory laboratory;
+    private String laboratoryname;
     private User user;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
@@ -24,5 +25,18 @@ public class Reservation {
 
     public boolean getStatus() {
         return Status;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Reservation that = (Reservation) obj;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
