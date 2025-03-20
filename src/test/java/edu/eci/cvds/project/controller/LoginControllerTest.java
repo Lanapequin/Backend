@@ -1,6 +1,6 @@
 package edu.eci.cvds.project.controller;
 
-import edu.eci.cvds.project.exception.UserExcepion;
+import edu.eci.cvds.project.exception.UserException;
 import edu.eci.cvds.project.service.LoginService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +48,7 @@ public class LoginControllerTest {
         Map<String, String> credentials = new HashMap<>();
         credentials.put("username", "nonexistentuser");
         credentials.put("password", "testpassword");
-        when(loginService.loginUser("nonexistentuser", "testpassword")).thenThrow(new UserExcepion.UserNotFoundException("User not found!"));
+        when(loginService.loginUser("nonexistentuser", "testpassword")).thenThrow(new UserException.UserNotFoundException("User not found!"));
 
         MockHttpServletResponse response = new MockHttpServletResponse();
         ResponseEntity<String> responseEntity = loginController.login(credentials, response);
@@ -62,7 +62,7 @@ public class LoginControllerTest {
         Map<String, String> credentials = new HashMap<>();
         credentials.put("username", "testuser");
         credentials.put("password", "wrongpassword");
-        when(loginService.loginUser("testuser", "wrongpassword")).thenThrow(new UserExcepion.UserIncorrectPasswordException("wrongpassword"));
+        when(loginService.loginUser("testuser", "wrongpassword")).thenThrow(new UserException.UserIncorrectPasswordException("wrongpassword"));
 
         MockHttpServletResponse response = new MockHttpServletResponse();
         ResponseEntity<String> responseEntity = loginController.login(credentials, response);

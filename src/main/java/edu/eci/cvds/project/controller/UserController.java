@@ -1,6 +1,7 @@
 package edu.eci.cvds.project.controller;
 
 import edu.eci.cvds.project.model.DTO.UserDTO;
+import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.model.Role;
 import edu.eci.cvds.project.model.User;
 import edu.eci.cvds.project.service.ServicesUser;
@@ -122,6 +123,19 @@ public class UserController {
         }
     }
 
+    @GetMapping("/username/{username}")
+    public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
+        HashMap<String, String> response;
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getUserByUsername(username));
+        } catch (Exception e) {
+            e.printStackTrace(); // Imprime la traza de la excepción en la consola
+            response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     /**
      * Elimina un usuario por su ID.
      * @param id Identificador del usuario a eliminar.
@@ -147,7 +161,7 @@ public class UserController {
      * @param id Identificador del usuario.
      * @return ResponseEntity con la lista de reservas o un error en caso de fallo.
      */
-    @GetMapping("/getTasks/{id}")
+    @GetMapping("/getReservations/{id}")
     public ResponseEntity<?> getAllReservationByUserId(@PathVariable String id) {
         HashMap<String, String> response;
         try {
@@ -156,6 +170,29 @@ public class UserController {
             response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+    @GetMapping("/getReservationsByUsername/{username}")
+    public ResponseEntity<?> getAllReservationByUsername(@PathVariable String username) {
+        HashMap<String, String> response;
+        try {
+            userService.verifyReservations(username);
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getAllReservationByUsername(username));
+        } catch (Exception e) {
+            response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<?> updateReservation(@RequestBody User user) {
+        HashMap<String, Object> response = new HashMap<>();
+        try {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.updateUser(user));
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

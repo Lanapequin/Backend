@@ -16,8 +16,9 @@ public class User {
     private String id;
     private String username;
     private String password;
-    public List<Reservation> reservations;
+    public List<Reservation> reservations = new ArrayList<>();
     private Role role;
 }
+
 
 

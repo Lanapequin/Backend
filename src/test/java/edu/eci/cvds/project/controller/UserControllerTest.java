@@ -163,4 +163,29 @@ public class UserControllerTest {
         assertEquals("Error getting reservations", ((HashMap<?, ?>) response.getBody()).get("error"));
         verify(userService, times(1)).getAllReservationByUserId("7");
     }
+
+    @Test
+    public void testUpdateUser_Success() {
+        User user = new User("1", "updatedUser", "newPwd", new ArrayList<>(), Role.USER);
+        when(userService.updateUser(user)).thenReturn(user);
+
+        ResponseEntity<?> response = userController.updateReservation(user);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(user, response.getBody());
+        verify(userService, times(1)).updateUser(user);
+    }
+
+    @Test
+    public void testUpdateUser_Error() {
+        User user = new User("1", "updatedUser", "newPwd", new ArrayList<>(), Role.USER);
+        when(userService.updateUser(user)).thenThrow(new RuntimeException("Error updating user"));
+
+        ResponseEntity<?> response = userController.updateReservation(user);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Error updating user", ((HashMap<?, ?>) response.getBody()).get("error"));
+        verify(userService, times(1)).updateUser(user);
+    }
+
 }

@@ -16,6 +16,6 @@ public class ReservationDTO {
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private String purpose;
-    private boolean status;
+    private Integer priority;
 }
 

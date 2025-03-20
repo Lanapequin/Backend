@@ -12,9 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +53,31 @@ public class ReservationControllerTest {
     }
 
     @Test
+    public void testUpdateReservation_Success() {
+        Reservation reservation = new Reservation();
+        when(reservationService.updateReservation(reservation)).thenReturn(reservation);
+
+        ResponseEntity<?> response = reservationController.updateReservation(reservation);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(reservation, response.getBody());
+        verify(reservationService, times(1)).updateReservation(reservation);
+    }
+
+    @Test
+    public void testUpdateReservation_Error() {
+        Reservation reservation = new Reservation();
+        when(reservationService.updateReservation(reservation)).thenThrow(new RuntimeException("Error updating reservation"));
+
+        ResponseEntity<?> response = reservationController.updateReservation(reservation);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody() instanceof HashMap);
+        assertEquals("Error updating reservation", ((HashMap<?, ?>) response.getBody()).get("error"));
+
+        verify(reservationService, times(1)).updateReservation(reservation);
+    }
+    @Test
     public void testCancelReservation_Success() {
         when(reservationService.cancelReservation("1")).thenReturn(true);
 
@@ -83,3 +109,4 @@ public class ReservationControllerTest {
         verify(reservationService, times(1)).getAllReservations();
     }
 }
+

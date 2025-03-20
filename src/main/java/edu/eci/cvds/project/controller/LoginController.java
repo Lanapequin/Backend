@@ -1,7 +1,9 @@
 package edu.eci.cvds.project.controller;
 
-import edu.eci.cvds.project.exception.UserExcepion;
+import edu.eci.cvds.project.exception.UserException;
+import edu.eci.cvds.project.exception.UserException;
 import edu.eci.cvds.project.service.LoginService;
+import edu.eci.cvds.project.service.ServicesLogin;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ import java.util.Map; // Changed from HashMap to Map
 public class LoginController {
 
     @Autowired
-    private LoginService loginService;
+    private ServicesLogin loginService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Map<String, String> credentials, HttpServletResponse response) {
@@ -29,9 +31,9 @@ public class LoginController {
             cookie.setPath("/");
             response.addCookie(cookie);
             return ResponseEntity.ok(token);
-        } catch (UserExcepion.UserNotFoundException e) {
+        } catch (UserException.UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        } catch (UserExcepion.UserIncorrectPasswordException e) {
+        } catch (UserException.UserIncorrectPasswordException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unknown server error");
