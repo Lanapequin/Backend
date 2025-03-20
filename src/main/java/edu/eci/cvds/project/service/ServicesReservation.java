@@ -15,4 +15,7 @@ public interface ServicesReservation {
     boolean isLaboratoryAvilable(Laboratory laboratory, LocalDateTime start, LocalDateTime end);
     boolean isReservationAvailable(Reservation reservation);
     String generateUniqueId();
+    Reservation updateReservation(Reservation reservation);
+    void generateRandomReservations(int min, int max);
+    void deleteAllReservations();
 }

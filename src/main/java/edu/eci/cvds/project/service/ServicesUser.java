@@ -16,5 +16,8 @@ public interface ServicesUser {
     User save(UserDTO user);
     User getUserById(String id);
     void deleteUser(String id);
+    User updateUser(User user);
+    List<Reservation> getAllReservationByUsername(String username);
+    void verifyReservations(String username);
 
 }

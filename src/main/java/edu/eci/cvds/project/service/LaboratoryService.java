@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class LaboratoryService implements ServicesLab {
@@ -38,6 +37,11 @@ public class LaboratoryService implements ServicesLab {
         return laboratoryRepository.findById(id);
     }
 
+    @Override
+    public Laboratory getLaboratoryByName(String name) {
+        return laboratoryRepository.findLaboratoriesByName(name);
+    }
+
     /**
      * Guarda un nuevo laboratorio en la base de datos a partir de un DTO.
      * @param laboratoryDTO DTO que contiene los datos del laboratorio.
@@ -45,10 +49,14 @@ public class LaboratoryService implements ServicesLab {
      */
     @Override
     public Laboratory saveLaboratory(LaboratoryDTO laboratoryDTO) {
+        if (laboratoryRepository.findLaboratoriesByName(laboratoryDTO.getName()) != null) {
+            throw new IllegalArgumentException("Laboratory already exists");
+        }
         Laboratory laboratory = new Laboratory();
         laboratory.setName(laboratoryDTO.getName());
-        laboratory.setReservations(new ArrayList<>());
-        return laboratoryRepository.save(laboratory);
+        laboratory.setReservations(new ArrayList<Reservation>());
+
+        return laboratoryRepository.saveLaboratory(laboratory);
     }
 
     /**
@@ -68,5 +76,27 @@ public class LaboratoryService implements ServicesLab {
         }
         return true;
     }
+    @Override
+    public boolean isLaboratoriesAvailable(Laboratory laboratory,LocalDateTime dateStartTime,LocalDateTime dateEndTime) {
+        for (Reservation reservation : laboratory.getReservations()) {
+            LocalDateTime start=reservation.getStartDateTime();
+            LocalDateTime end=reservation.getEndDateTime();
+            if (!(dateEndTime.isBefore(start) || dateStartTime.isAfter(end))) {
+                return false;
+            }
+            if(start.isEqual(dateStartTime) && end.isEqual(dateEndTime)||dateStartTime.isAfter(start)&&dateEndTime.isBefore(end)) {
+                return false;
+            }
 
+            if(dateStartTime.isBefore(start) && dateEndTime.isBefore(start)||dateStartTime.isAfter(end) && dateEndTime.isAfter(end)) {
+                return true;
+            }
+        }
+        return true;
+    }
+    @Override
+    public void deleteLaboratory(String id) {
+        laboratoryRepository.deleteLaboratoryById(id);
+    }
 }
+
