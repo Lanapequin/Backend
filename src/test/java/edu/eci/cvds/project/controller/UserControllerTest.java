@@ -76,7 +76,7 @@ public class UserControllerTest {
 //        User savedUser = new User("4", "newadmin", "pwd", new ArrayList<>(), Role.ADMIN);
 //        when(userService.save(userDTO)).thenReturn(savedUser);
 //
-////        ResponseEntity<?> response = userController.saveAdmin(userDTO.getUsername());
+    ////        ResponseEntity<?> response = userController.saveAdmin(userDTO.getUsername());
 //
 //        assertEquals(HttpStatus.CREATED, response.getStatusCode());
 //        assertEquals(savedUser, response.getBody());
@@ -188,4 +188,96 @@ public class UserControllerTest {
         verify(userService, times(1)).updateUser(user);
     }
 
+    @Test
+    public void testGetUserByUsername_Success() {
+        User user = new User("1", "user1", "pwd1", new ArrayList<>(), Role.USER);
+        when(userService.getUserByUsername("user1")).thenReturn(user);
+
+        ResponseEntity<?> response = userController.getUserByUsername("user1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(user, response.getBody());
+        verify(userService, times(1)).getUserByUsername("user1");
+    }
+
+    @Test
+    public void testGetUserByUsername_Error() {
+        when(userService.getUserByUsername("unknown")).thenThrow(new RuntimeException("User not found"));
+
+        ResponseEntity<?> response = userController.getUserByUsername("unknown");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("User not found", ((HashMap<?, ?>) response.getBody()).get("error"));
+        verify(userService, times(1)).getUserByUsername("unknown");
+    }
+
+    @Test
+    public void testGetUserRole_Success() {
+        when(userService.getRoleByUsername("user1")).thenReturn("ROLE_USER");
+
+        ResponseEntity<String> response = userController.getUserRole("user1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("ROLE_USER", response.getBody());
+        verify(userService, times(1)).getRoleByUsername("user1");
+    }
+
+    @Test
+    public void testGetUserRole_Error() {
+        when(userService.getRoleByUsername("unknown")).thenThrow(new RuntimeException("User not found"));
+
+        ResponseEntity<String> response = userController.getUserRole("unknown");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("User not found", response.getBody());
+        verify(userService, times(1)).getRoleByUsername("unknown");
+    }
+
+    @Test
+    public void testGetAllReservationByUsername_Success() {
+        List<Reservation> reservations = new ArrayList<>();
+        when(userService.getAllReservationByUsername("user1")).thenReturn(reservations);
+
+        ResponseEntity<?> response = userController.getAllReservationByUsername("user1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(reservations, response.getBody());
+        verify(userService, times(1)).getAllReservationByUsername("user1");
+    }
+
+    @Test
+    public void testGetAllReservationByUsername_Error() {
+        when(userService.getAllReservationByUsername("unknown")).thenThrow(new RuntimeException("Error fetching reservations"));
+
+        ResponseEntity<?> response = userController.getAllReservationByUsername("unknown");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Error fetching reservations", ((HashMap<?, ?>) response.getBody()).get("error"));
+        verify(userService, times(1)).getAllReservationByUsername("unknown");
+    }
+
+    @Test
+    public void testSaveAdmin_Success() {
+        String token = "valid-token";
+        User updatedUser = new User("2", "adminUser", "pwd", new ArrayList<>(), Role.ADMIN);
+        when(userService.updateAdmin("adminUser", token)).thenReturn(updatedUser);
+
+        ResponseEntity<?> response = userController.saveAdmin("adminUser", token);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(updatedUser, response.getBody());
+        verify(userService, times(1)).updateAdmin("adminUser", token);
+    }
+
+    @Test
+    public void testSaveAdmin_Error() {
+        String token = "invalid-token";
+        when(userService.updateAdmin("adminUser", token)).thenThrow(new RuntimeException("Unauthorized"));
+
+        ResponseEntity<?> response = userController.saveAdmin("adminUser", token);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Unauthorized", ((HashMap<?, ?>) response.getBody()).get("error"));
+        verify(userService, times(1)).updateAdmin("adminUser", token);
+    }
 }
