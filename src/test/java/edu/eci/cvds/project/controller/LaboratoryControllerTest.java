@@ -72,17 +72,6 @@ public class LaboratoryControllerTest {
         verify(laboratoryService, times(1)).getLaboratoryById("LAB-002");
     }
 
-//    @Test
-//    public void testCreateLaboratory() {
-//        when(laboratoryService.saveLaboratory(laboratoryDTO)).thenReturn(laboratory);
-//
-//        ResponseEntity<Laboratory> response = laboratoryController.createLaboratory(laboratoryDTO);
-//
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        assertEquals(laboratory, response.getBody());
-//        verify(laboratoryService, times(1)).saveLaboratory(laboratoryDTO);
-//    }
-
     @Test
     public void testCheckLaboratoryAvailability_LabAvailable() {
         LocalDateTime dateTime = LocalDateTime.now();
@@ -123,4 +112,70 @@ public class LaboratoryControllerTest {
         verify(laboratoryService, times(1)).getLaboratoryById("LAB-002");
         verify(laboratoryService, never()).isLaboratoryAvailable(any(), any());
     }
+
+    @Test
+    public void testGetLaboratoryByName_ExistingLab() {
+        when(laboratoryService.getLaboratoryByName("Lab 1")).thenReturn(laboratory);
+
+        ResponseEntity<Laboratory> response = laboratoryController.getLaboratoryByName("Lab 1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(laboratory, response.getBody());
+        verify(laboratoryService, times(1)).getLaboratoryByName("Lab 1");
+    }
+
+    @Test
+    public void testGetLaboratoryByName_NonExistingLab() {
+        when(laboratoryService.getLaboratoryByName("Lab X"))
+                .thenReturn(null);
+
+        ResponseEntity<Laboratory> response = laboratoryController.getLaboratoryByName("Lab X");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(laboratoryService, times(1)).getLaboratoryByName("Lab X");
+    }
+
+    @Test
+    public void testCreateLaboratory_Success() {
+        String token = "Bearer valid-token";
+        when(laboratoryService.saveLaboratory(laboratoryDTO, token)).thenReturn(laboratory);
+
+        ResponseEntity<Laboratory> response = laboratoryController.createLaboratory(laboratoryDTO, token);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(laboratory, response.getBody());
+        verify(laboratoryService, times(1)).saveLaboratory(laboratoryDTO, token);
+    }
+
+    @Test
+    public void testCheckLaboratoriesAvailability_Success() {
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = start.plusHours(2);
+        List<Laboratory> laboratories = List.of(laboratory);
+        when(laboratoryService.getAllLaboratories()).thenReturn(laboratories);
+        when(laboratoryService.isLaboratoriesAvailable(laboratory, start, end)).thenReturn(true);
+
+        ResponseEntity<List<String>> response = laboratoryController.checkLaboratoriesAvailability(start.toString(), end.toString());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        verify(laboratoryService, times(1)).getAllLaboratories();
+        verify(laboratoryService, times(1)).isLaboratoriesAvailable(laboratory, start, end);
+    }
+
+    @Test
+    public void testCheckLaboratoriesAvailability_NoAvailableLabs() {
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = start.plusHours(2);
+        List<Laboratory> laboratories = List.of(laboratory);
+        when(laboratoryService.getAllLaboratories()).thenReturn(laboratories);
+        when(laboratoryService.isLaboratoriesAvailable(laboratory, start, end)).thenReturn(false);
+
+        ResponseEntity<List<String>> response = laboratoryController.checkLaboratoriesAvailability(start.toString(), end.toString());
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(laboratoryService, times(1)).getAllLaboratories();
+        verify(laboratoryService, times(1)).isLaboratoriesAvailable(laboratory, start, end);
+    }
+
 }

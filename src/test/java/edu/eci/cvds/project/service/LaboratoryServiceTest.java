@@ -4,6 +4,7 @@ import edu.eci.cvds.project.model.DTO.LaboratoryDTO;
 import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.repository.LaboratoryMongoRepository;
+import edu.eci.cvds.project.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -11,157 +12,166 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class LaboratoryServiceTest {
-
-    @Mock
-    private LaboratoryMongoRepository laboratoryRepository;
+class LaboratoryServiceTest {
 
     @InjectMocks
     private LaboratoryService laboratoryService;
 
+    @Mock
+    private LaboratoryMongoRepository laboratoryRepository;
+
+    @Mock
+    private JwtUtil jwtUtilservice;
+
     private Laboratory laboratory;
-    private LaboratoryDTO laboratoryDTO;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String validToken = "valid-token";
+    private String invalidToken = "invalid-token";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
+        laboratory = new Laboratory();
+        laboratory.setName("Lab A");
+        laboratory.setReservations(new ArrayList<>());
 
-        laboratory = new Laboratory("1", "Lab A", null);
-        laboratoryDTO = new LaboratoryDTO("Lab A");
+        startTime = LocalDateTime.of(2025, 4, 10, 10, 0);
+        endTime = LocalDateTime.of(2025, 4, 10, 12, 0);
     }
 
     @Test
-    public void testGetAllLaboratories() {
-        when(laboratoryRepository.findAll()).thenReturn(List.of(laboratory));
+    void testGetAllLaboratories() {
+        List<Laboratory> labs = List.of(new Laboratory(), new Laboratory());
+        when(laboratoryRepository.findAll()).thenReturn(labs);
 
-        List<Laboratory> resultado = laboratoryService.getAllLaboratories();
-
-        assertFalse(resultado.isEmpty());
-        assertEquals(1, resultado.size());
-        assertEquals("Lab A", resultado.get(0).getName());
+        List<Laboratory> result = laboratoryService.getAllLaboratories();
+        assertEquals(2, result.size());
     }
 
     @Test
-    public void testGetLaboratoryById_Found() {
-        when(laboratoryRepository.findById("1")).thenReturn(Optional.of(laboratory));
+    void testGetLaboratoryById_Found() {
+        when(laboratoryRepository.findById("123")).thenReturn(Optional.of(laboratory));
 
-        Optional<Laboratory> resultado = laboratoryService.getLaboratoryById("1");
-
-        assertTrue(resultado.isPresent());
-        assertEquals("Lab A", resultado.get().getName());
+        Optional<Laboratory> result = laboratoryService.getLaboratoryById("123");
+        assertTrue(result.isPresent());
+        assertEquals("Lab A", result.get().getName());
     }
 
     @Test
-    public void testGetLaboratoryById_NotFound() {
-        when(laboratoryRepository.findById("2")).thenReturn(Optional.empty());
+    void testGetLaboratoryById_NotFound() {
+        when(laboratoryRepository.findById("999")).thenReturn(Optional.empty());
 
-        Optional<Laboratory> resultado = laboratoryService.getLaboratoryById("2");
-
-        assertFalse(resultado.isPresent());
-    }
-
-//    @Test
-//    void shouldSaveLaboratory() {
-//        when(laboratoryRepository.findLaboratoriesByName("Lab A")).thenReturn(null);
-//        when(laboratoryRepository.saveLaboratory(any(Laboratory.class))).thenReturn(laboratory);
-//
-//        Laboratory savedLab = laboratoryService.saveLaboratory(laboratoryDTO);
-//        assertNotNull(savedLab);
-//        assertEquals("Lab A", savedLab.getName());
-//    }
-
-//    @Test
-//    void shouldNotSaveDuplicateLaboratory() {
-//        LaboratoryDTO laboratoryDTO = new LaboratoryDTO();
-//        laboratoryDTO.setName("Lab1");
-//        Laboratory existingLab = new Laboratory();
-//        existingLab.setName("Lab1");
-//        when(laboratoryRepository.findLaboratoriesByName("Lab1")).thenReturn(existingLab);
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            laboratoryService.saveLaboratory(laboratoryDTO);
-//        });
-//        assertEquals("Laboratory already exists", exception.getMessage());
-//        verify(laboratoryRepository).findLaboratoriesByName("Lab1");
-//    }
-
-
-    @Test
-    public void testIsLaboratoryAvailable_Available() {
-        laboratory.setReservations(List.of());
-
-        boolean resultado = laboratoryService.isLaboratoryAvailable(laboratory,
-                LocalDateTime.of(2025, 3, 10, 10, 0));
-
-        assertTrue(resultado);
+        Optional<Laboratory> result = laboratoryService.getLaboratoryById("999");
+        assertFalse(result.isPresent());
     }
 
     @Test
-    public void testIsLaboratoryAvailable_NotAvailable() {
-        Reservation reservation = new Reservation();
-        reservation.setStartDateTime(LocalDateTime.of(2025, 3, 10, 9, 0));
-        reservation.setEndDateTime(LocalDateTime.of(2025, 3, 10, 11, 0));
-
-        laboratory.setReservations(List.of(reservation));
-
-        boolean resultado = laboratoryService.isLaboratoryAvailable(laboratory,
-                LocalDateTime.of(2025, 3, 10, 10, 0));
-
-        assertFalse(resultado);
-    }
-
-    @Test
-    void shouldDeleteLaboratory() {
-        doNothing().when(laboratoryRepository).deleteLaboratoryById("1");
-        laboratoryService.deleteLaboratory("1");
-        verify(laboratoryRepository, times(1)).deleteLaboratoryById("1");
-    }
-
-    @Test
-    public void testIsLaboratoryAvailable_AtStartTime() {
-        Reservation reservation = new Reservation();
-        reservation.setStartDateTime(LocalDateTime.of(2025, 3, 10, 9, 0));
-        reservation.setEndDateTime(LocalDateTime.of(2025, 3, 10, 11, 0));
-        laboratory.setReservations(List.of(reservation));
-
-        boolean resultado = laboratoryService.isLaboratoryAvailable(laboratory,
-                LocalDateTime.of(2025, 3, 10, 9, 0));
-        assertFalse(resultado);
-    }
-
-    @Test
-    public void testIsLaboratoryAvailable_AtEndTime() {
-        Reservation reservation = new Reservation();
-        reservation.setStartDateTime(LocalDateTime.of(2025, 3, 10, 9, 0));
-        reservation.setEndDateTime(LocalDateTime.of(2025, 3, 10, 11, 0));
-        laboratory.setReservations(List.of(reservation));
-
-        boolean resultado = laboratoryService.isLaboratoryAvailable(laboratory,
-                LocalDateTime.of(2025, 3, 10, 11, 0));
-        assertFalse(resultado);
-    }
-
-    @Test
-    public void testGetLaboratoryByName_Found() {
+    void testGetLaboratoryByName_Found() {
         when(laboratoryRepository.findLaboratoriesByName("Lab A")).thenReturn(laboratory);
 
-        Laboratory resultado = laboratoryService.getLaboratoryByName("Lab A");
-
-        assertNotNull(resultado);
-        assertEquals("Lab A", resultado.getName());
+        Laboratory result = laboratoryService.getLaboratoryByName("Lab A");
+        assertNotNull(result);
+        assertEquals("Lab A", result.getName());
     }
 
     @Test
-    public void testGetLaboratoryByName_NotFound() {
-        when(laboratoryRepository.findLaboratoriesByName("NonExistentLab")).thenReturn(null);
+    void testGetLaboratoryByName_NotFound() {
+        when(laboratoryRepository.findLaboratoriesByName("Lab X")).thenReturn(null);
 
-        Laboratory resultado = laboratoryService.getLaboratoryByName("NonExistentLab");
+        Laboratory result = laboratoryService.getLaboratoryByName("Lab X");
+        assertNull(result);
+    }
 
-        assertNull(resultado);
+    @Test
+    void testSaveLaboratory_Success() {
+        when(jwtUtilservice.validateAdmin(validToken)).thenReturn(true);
+        when(laboratoryRepository.findLaboratoriesByName("Lab B")).thenReturn(null);
+        when(laboratoryRepository.saveLaboratory(any(Laboratory.class))).thenReturn(laboratory);
+
+        LaboratoryDTO dto = new LaboratoryDTO();
+        dto.setName("Lab B");
+
+        Laboratory result = laboratoryService.saveLaboratory(dto, validToken);
+        assertNotNull(result);
+        assertEquals("Lab A", result.getName());
+    }
+
+    @Test
+    void testSaveLaboratory_InvalidToken() {
+        when(jwtUtilservice.validateAdmin(invalidToken)).thenReturn(false);
+
+        LaboratoryDTO dto = new LaboratoryDTO();
+        dto.setName("Lab B");
+
+        assertThrows(IllegalArgumentException.class, () -> laboratoryService.saveLaboratory(dto, invalidToken));
+    }
+
+    @Test
+    void testSaveLaboratory_LaboratoryAlreadyExists() {
+        when(jwtUtilservice.validateAdmin(validToken)).thenReturn(true);
+        when(laboratoryRepository.findLaboratoriesByName("Lab A")).thenReturn(laboratory);
+
+        LaboratoryDTO dto = new LaboratoryDTO();
+        dto.setName("Lab A");
+
+        assertThrows(IllegalArgumentException.class, () -> laboratoryService.saveLaboratory(dto, validToken));
+    }
+
+    @Test
+    void testIsLaboratoryAvailable_NoReservations() {
+        assertTrue(laboratoryService.isLaboratoryAvailable(laboratory, startTime));
+    }
+
+    @Test
+    void testIsLaboratoryAvailable_ReservationExists() {
+        addReservation(startTime, endTime);
+        assertFalse(laboratoryService.isLaboratoryAvailable(laboratory, startTime.plusMinutes(30)));
+    }
+
+    @Test
+    void testIsLaboratoryAvailable_OutsideReservation() {
+        addReservation(startTime, endTime);
+        assertTrue(laboratoryService.isLaboratoryAvailable(laboratory, startTime.minusHours(2)));
+    }
+
+    @Test
+    void testIsLaboratoriesAvailable_ReservationExists_False() {
+        addReservation(startTime, endTime);
+        assertFalse(laboratoryService.isLaboratoriesAvailable(laboratory, startTime, endTime));
+    }
+
+    @Test
+    void testIsLaboratoriesAvailable_CompletelyBeforeOrAfter_True() {
+        addReservation(startTime, endTime);
+        assertTrue(laboratoryService.isLaboratoriesAvailable(laboratory,
+                LocalDateTime.of(2025, 4, 10, 7, 0),
+                LocalDateTime.of(2025, 4, 10, 8, 0)));
+
+        assertTrue(laboratoryService.isLaboratoriesAvailable(laboratory,
+                LocalDateTime.of(2025, 4, 10, 13, 0),
+                LocalDateTime.of(2025, 4, 10, 14, 0)));
+    }
+
+    @Test
+    void testDeleteLaboratory() {
+        doNothing().when(laboratoryRepository).deleteLaboratoryById("123");
+
+        assertDoesNotThrow(() -> laboratoryService.deleteLaboratory("123"));
+        verify(laboratoryRepository, times(1)).deleteLaboratoryById("123");
+    }
+
+    private void addReservation(LocalDateTime start, LocalDateTime end) {
+        Reservation reservation = new Reservation();
+        reservation.setStartDateTime(start);
+        reservation.setEndDateTime(end);
+        laboratory.getReservations().add(reservation);
     }
 }

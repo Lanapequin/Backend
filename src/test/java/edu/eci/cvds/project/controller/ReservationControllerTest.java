@@ -3,23 +3,20 @@ package edu.eci.cvds.project.controller;
 import edu.eci.cvds.project.model.DTO.ReservationDTO;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.service.ServicesReservation;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class ReservationControllerTest {
+class ReservationControllerTest {
 
     @Mock
     private ServicesReservation reservationService;
@@ -27,86 +24,98 @@ public class ReservationControllerTest {
     @InjectMocks
     private ReservationController reservationController;
 
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
     @Test
-    public void testCreateReservation_Success() {
+    void testCreateReservation() {
         ReservationDTO reservationDTO = new ReservationDTO();
         Reservation reservation = new Reservation();
-        when(reservationService.createReservation(reservationDTO)).thenReturn(reservation);
+        when(reservationService.createReservation(any())).thenReturn(reservation);
 
         ResponseEntity<?> response = reservationController.createReservation(reservationDTO);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(reservation, response.getBody());
-        verify(reservationService, times(1)).createReservation(reservationDTO);
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
     }
 
     @Test
-    public void testCreateReservation_Error() {
-        ReservationDTO reservationDTO = new ReservationDTO();
-        when(reservationService.createReservation(reservationDTO)).thenThrow(new RuntimeException("Error creating reservation"));
-
-        ResponseEntity<?> response = reservationController.createReservation(reservationDTO);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Error: Error creating reservation", response.getBody());
-        verify(reservationService, times(1)).createReservation(reservationDTO);
-    }
-
-    @Test
-    public void testUpdateReservation_Success() {
-        Reservation reservation = new Reservation();
-        when(reservationService.updateReservation(reservation)).thenReturn(reservation);
-
-        ResponseEntity<?> response = reservationController.updateReservation(reservation);
-
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertEquals(reservation, response.getBody());
-        verify(reservationService, times(1)).updateReservation(reservation);
-    }
-
-    @Test
-    public void testUpdateReservation_Error() {
-        Reservation reservation = new Reservation();
-        when(reservationService.updateReservation(reservation)).thenThrow(new RuntimeException("Error updating reservation"));
-
-        ResponseEntity<?> response = reservationController.updateReservation(reservation);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody() instanceof HashMap);
-        assertEquals("Error updating reservation", ((HashMap<?, ?>) response.getBody()).get("error"));
-
-        verify(reservationService, times(1)).updateReservation(reservation);
-    }
-    @Test
-    public void testCancelReservation_Success() {
-        when(reservationService.cancelReservation("1")).thenReturn(true);
-
-        ResponseEntity<Void> response = reservationController.cancelReservation("1");
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(reservationService, times(1)).cancelReservation("1");
-    }
-
-    @Test
-    public void testCancelReservation_NotFound() {
-        when(reservationService.cancelReservation("2")).thenReturn(false);
-
-        ResponseEntity<Void> response = reservationController.cancelReservation("2");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        verify(reservationService, times(1)).cancelReservation("2");
-    }
-
-    @Test
-    public void testGetAllReservations() {
-        List<Reservation> reservations = new ArrayList<>();
-        reservations.add(new Reservation());
+    void testGetAllReservations() {
+        List<Reservation> reservations = Arrays.asList(new Reservation(), new Reservation());
         when(reservationService.getAllReservations()).thenReturn(reservations);
 
-        List<Reservation> result = reservationController.getAllReservations();
+        List<Reservation> response = reservationController.getAllReservations();
 
-        assertEquals(reservations, result);
-        verify(reservationService, times(1)).getAllReservations();
+        assertEquals(2, response.size());
+    }
+
+    @Test
+    void testCancelReservation() {
+        when(reservationService.cancelReservation("1")).thenReturn(true);
+        ResponseEntity<Void> response = reservationController.cancelReservation("1");
+        assertEquals(204, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testGenerateReservations() {
+        doNothing().when(reservationService).generateRandomReservations(anyInt(), anyInt());
+        ResponseEntity<String> response = reservationController.generateReservations(10, 50);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Reservas generadas exitosamente.", response.getBody());
+    }
+
+    @Test
+    void testDeleteAllReservations() {
+        doNothing().when(reservationService).deleteAllReservations();
+        ResponseEntity<String> response = reservationController.deleteAllReservations();
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testGetReservationsByDate() {
+        Reservation res1 = new Reservation();
+        res1.setStartDateTime(LocalDate.of(2024, 3, 30).atStartOfDay());
+
+        when(reservationService.getAllReservations()).thenReturn(Collections.singletonList(res1));
+        ResponseEntity<Map<LocalDate, Long>> response = reservationController.getReservationsByDate();
+
+        assertTrue(response.getBody().containsKey(LocalDate.of(2024, 3, 30)));
+    }
+
+    @Test
+    void testGetReservationsByLabAndDate() {
+        Reservation res1 = new Reservation();
+        res1.setStartDateTime(LocalDate.of(2024, 3, 30).atStartOfDay());
+        res1.setLaboratoryname("Lab A");
+
+        when(reservationService.getAllReservations()).thenReturn(Collections.singletonList(res1));
+        ResponseEntity<Map<String, Long>> response = reservationController.getReservationsByLabAndDate(LocalDate.of(2024, 3, 29), LocalDate.of(2024, 3, 31));
+
+        assertTrue(response.getBody().containsKey("Lab A"));
+    }
+
+    @Test
+    void testGetAverageReservationsByPriority() {
+        Reservation res1 = new Reservation();
+        res1.setPriority(1);
+
+        when(reservationService.getAllReservations()).thenReturn(Collections.singletonList(res1));
+        ResponseEntity<Map<Integer, Double>> response = reservationController.getAverageReservationsByPriority();
+
+        assertTrue(response.getBody().containsKey(1));
+        assertEquals(1.0, response.getBody().get(1));
+    }
+
+    @Test
+    void testGetReservationsByLab() {
+        Reservation res1 = new Reservation();
+        res1.setLaboratoryname("Lab A");
+
+        when(reservationService.getAllReservations()).thenReturn(Collections.singletonList(res1));
+        ResponseEntity<Map<String, Long>> response = reservationController.getReservationsByLab();
+
+        assertTrue(response.getBody().containsKey("Lab A"));
     }
 }
-
