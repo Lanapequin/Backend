@@ -4,17 +4,23 @@ import edu.eci.cvds.project.model.DTO.LaboratoryDTO;
 import edu.eci.cvds.project.model.DTO.UserDTO;
 import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
+import edu.eci.cvds.project.model.Role;
 import edu.eci.cvds.project.model.User;
 import edu.eci.cvds.project.repository.ReservationMongoRepository;
 import edu.eci.cvds.project.repository.UserMongoRepository;
 
-import edu.eci.cvds.project.repository.porsilas.UserRepository;
+import edu.eci.cvds.project.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +30,8 @@ public class UserService implements ServicesUser {
     private UserMongoRepository userRepository;
     @Autowired
     private ReservationMongoRepository reservationRepository;
+    @Autowired
+    private JwtUtil jwtUtilservice;
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     /**
@@ -39,8 +47,19 @@ public class UserService implements ServicesUser {
         user.setUsername(userdto.getUsername());
         String hashedPassword = passwordEncoder.encode(userdto.getPassword());
         user.setPassword(hashedPassword);
-        user.setRole(userdto.getRole());
         user.setReservations(new ArrayList<Reservation>());
+        return userRepository.saveUser(user);
+    }
+    @Override
+    public User updateAdmin(String username,String token) {
+        if (!jwtUtilservice.validateAdmin(token)) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+        User user=userRepository.findUserByUsername(username);
+        if(user==null){
+            throw new IllegalArgumentException("User not found");
+        }
+        user.setRole(Role.ADMIN);
         return userRepository.saveUser(user);
     }
 
@@ -49,29 +68,6 @@ public class UserService implements ServicesUser {
         user.setReservations(user.getReservations());
         return userRepository.saveUser(user);
     }
-//    public void saveReservation(Reservation reservation){
-//        User user = reservation.getUser();
-//        if (user == null) {
-//            System.out.println("User is null");
-//        }
-//        user.reservations.add(reservation);
-//        userRepository.updateUser(user);
-//    }
-//public void saveReservation(Reservation reservation) {
-//    User user = reservation.getUser();
-//    if (user == null) {
-//        System.out.println("User is null");
-//        return; // Salir si el usuario es nulo.
-//    }
-//
-//    if(user.getReservations()==null){
-//        user.setReservations(new ArrayList<Reservation>());
-//
-//    }
-//    user.reservations.add(reservation);
-//    // Guardar al usuario con la reserva añadida (actualizar las reservas del usuario)
-//    userRepository.updateUser(user);
-//}
 
 
     /**
@@ -149,22 +145,8 @@ public class UserService implements ServicesUser {
             }
         }
     }
-//    @Override
-//    public List<Reservation> getAllReservationByUserId(String id) {
-//        if (!userRepository.existsById(id)) {
-//            throw new RuntimeException("User not found");
-//        }
-//        List<Reservation> reservations = reservationRepository.findAllReservations();
-//        List<Reservation> userReservations = new ArrayList<>();
-//        for (Reservation reservation : reservations) {
-//            if (reservation.getUser().equals(id)) {
-//                userReservations.add(reservation);
-//
-//            }
-//        }
-//        return userReservations;
-//
-//    }
+
+
 
     /**
      * Obtiene un usuario por su nombre de usuario.
@@ -184,5 +166,10 @@ public class UserService implements ServicesUser {
     @Override
     public List<User> getAllUser() {
         return userRepository.findAllUsers();
+    }
+
+    @Override
+    public String getRoleByUsername(String username) {
+        return userRepository.findUserByUsername(username).getRole().name();
     }
 }

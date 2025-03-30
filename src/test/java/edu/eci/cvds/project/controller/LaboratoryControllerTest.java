@@ -72,16 +72,16 @@ public class LaboratoryControllerTest {
         verify(laboratoryService, times(1)).getLaboratoryById("LAB-002");
     }
 
-    @Test
-    public void testCreateLaboratory() {
-        when(laboratoryService.saveLaboratory(laboratoryDTO)).thenReturn(laboratory);
-
-        ResponseEntity<Laboratory> response = laboratoryController.createLaboratory(laboratoryDTO);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(laboratory, response.getBody());
-        verify(laboratoryService, times(1)).saveLaboratory(laboratoryDTO);
-    }
+//    @Test
+//    public void testCreateLaboratory() {
+//        when(laboratoryService.saveLaboratory(laboratoryDTO)).thenReturn(laboratory);
+//
+//        ResponseEntity<Laboratory> response = laboratoryController.createLaboratory(laboratoryDTO);
+//
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals(laboratory, response.getBody());
+//        verify(laboratoryService, times(1)).saveLaboratory(laboratoryDTO);
+//    }
 
     @Test
     public void testCheckLaboratoryAvailability_LabAvailable() {

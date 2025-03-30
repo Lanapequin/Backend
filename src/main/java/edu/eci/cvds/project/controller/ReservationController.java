@@ -2,6 +2,11 @@ package edu.eci.cvds.project.controller;
 
 import edu.eci.cvds.project.model.DTO.ReservationDTO;
 import edu.eci.cvds.project.model.Laboratory;
+import edu.eci.cvds.project.service.UserDetailsServiceImpl;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.service.ServicesReservation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +25,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/reservations")
+@CrossOrigin(origins = "*")
 public class ReservationController {
 
     @Autowired
@@ -57,6 +63,7 @@ public class ReservationController {
     }
 
 
+
     /**
      * Cancela una reserva existente.
      * @param id Identificador de la reserva a cancelar.
@@ -75,7 +82,7 @@ public class ReservationController {
      * Obtiene la lista de todas las reservas.
      * @return Lista de reservas.
      */
-    @GetMapping
+    @GetMapping("/all")
     public List<Reservation> getAllReservations() {
         return reservationService.getAllReservations();
     }

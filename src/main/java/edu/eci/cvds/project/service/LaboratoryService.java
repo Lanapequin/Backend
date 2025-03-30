@@ -4,6 +4,7 @@ import edu.eci.cvds.project.model.DTO.LaboratoryDTO;
 import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.repository.LaboratoryMongoRepository;
+import edu.eci.cvds.project.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,8 @@ public class LaboratoryService implements ServicesLab {
 
     @Autowired
     private LaboratoryMongoRepository laboratoryRepository;
+    @Autowired
+    private JwtUtil jwtUtilservice;
 
     /**
      * Obtiene todos los laboratorios almacenados en la base de datos.
@@ -48,7 +51,10 @@ public class LaboratoryService implements ServicesLab {
      * @return El laboratorio guardado.
      */
     @Override
-    public Laboratory saveLaboratory(LaboratoryDTO laboratoryDTO) {
+    public Laboratory saveLaboratory(LaboratoryDTO laboratoryDTO,String token) {
+        if (!jwtUtilservice.validateAdmin(token)) {
+            throw new IllegalArgumentException("Invalid token");
+        }
         if (laboratoryRepository.findLaboratoriesByName(laboratoryDTO.getName()) != null) {
             throw new IllegalArgumentException("Laboratory already exists");
         }

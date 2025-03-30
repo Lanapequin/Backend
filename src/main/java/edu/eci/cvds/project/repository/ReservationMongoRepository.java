@@ -3,7 +3,6 @@ package edu.eci.cvds.project.repository;
 import edu.eci.cvds.project.model.Laboratory;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.model.User;
-import edu.eci.cvds.project.repository.porsilas.UserRepository;
 import org.springframework.boot.jackson.JsonMixinModuleEntries;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
