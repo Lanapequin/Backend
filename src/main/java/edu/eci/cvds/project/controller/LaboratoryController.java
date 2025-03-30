@@ -19,6 +19,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/laboratories")
+@CrossOrigin(origins = "*")
 public class LaboratoryController {
 
     @Autowired
@@ -28,7 +29,7 @@ public class LaboratoryController {
      * Obtiene la lista de todos los laboratorios.
      * @return Lista de laboratorios.
      */
-    @GetMapping
+    @GetMapping("/all")
     public List<Laboratory> getAllLaboratories() {
         return laboratoryService.getAllLaboratories();
     }
@@ -64,11 +65,10 @@ public class LaboratoryController {
      * @return ResponseEntity con el laboratorio creado.
      */
     @PostMapping("/create")
-    public ResponseEntity<Laboratory> createLaboratory(@RequestBody LaboratoryDTO laboratoryDTO) {
-        Laboratory created = laboratoryService.saveLaboratory(laboratoryDTO);
+    public ResponseEntity<Laboratory> createLaboratory(@RequestBody LaboratoryDTO laboratoryDTO,@RequestHeader("Authorization") String token ) {
+        Laboratory created = laboratoryService.saveLaboratory(laboratoryDTO,token);
         return ResponseEntity.ok(created);
     }
-
     /**
      * Verifica la disponibilidad de un laboratorio en una fecha y hora específica.
      * @param id Identificador del laboratorio.

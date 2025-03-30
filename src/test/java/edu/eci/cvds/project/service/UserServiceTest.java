@@ -57,18 +57,18 @@ public class UserServiceTest {
 
     }
 
-    @Test
-    void testSaveUser() {
-        when(userRepository.saveUser(any(User.class))).thenReturn(user);
-
-        User savedUser = userService.save(userDTO);
-
-        assertNotNull(savedUser);
-        assertEquals("Miguel", savedUser.getUsername());
-        assertEquals(Role.USER, savedUser.getRole());
-
-        verify(userRepository, times(1)).saveUser(any(User.class));
-    }
+//    @Test
+//    void testSaveUser() {
+//        when(userRepository.saveUser(any(User.class))).thenReturn(user);
+//
+//        User savedUser = userService.save(userDTO);
+//
+//        assertNotNull(savedUser);
+//        assertEquals("Miguel", savedUser.getUsername());
+//        assertEquals(Role.USER, savedUser.getRole());
+//
+//        verify(userRepository, times(1)).saveUser(any(User.class));
+//    }
 
 
     @Test

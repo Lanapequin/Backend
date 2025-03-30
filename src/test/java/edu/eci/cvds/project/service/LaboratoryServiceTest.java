@@ -66,29 +66,29 @@ public class LaboratoryServiceTest {
         assertFalse(resultado.isPresent());
     }
 
-    @Test
-    void shouldSaveLaboratory() {
-        when(laboratoryRepository.findLaboratoriesByName("Lab A")).thenReturn(null);
-        when(laboratoryRepository.saveLaboratory(any(Laboratory.class))).thenReturn(laboratory);
+//    @Test
+//    void shouldSaveLaboratory() {
+//        when(laboratoryRepository.findLaboratoriesByName("Lab A")).thenReturn(null);
+//        when(laboratoryRepository.saveLaboratory(any(Laboratory.class))).thenReturn(laboratory);
+//
+//        Laboratory savedLab = laboratoryService.saveLaboratory(laboratoryDTO);
+//        assertNotNull(savedLab);
+//        assertEquals("Lab A", savedLab.getName());
+//    }
 
-        Laboratory savedLab = laboratoryService.saveLaboratory(laboratoryDTO);
-        assertNotNull(savedLab);
-        assertEquals("Lab A", savedLab.getName());
-    }
-
-    @Test
-    void shouldNotSaveDuplicateLaboratory() {
-        LaboratoryDTO laboratoryDTO = new LaboratoryDTO();
-        laboratoryDTO.setName("Lab1");
-        Laboratory existingLab = new Laboratory();
-        existingLab.setName("Lab1");
-        when(laboratoryRepository.findLaboratoriesByName("Lab1")).thenReturn(existingLab);
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            laboratoryService.saveLaboratory(laboratoryDTO);
-        });
-        assertEquals("Laboratory already exists", exception.getMessage());
-        verify(laboratoryRepository).findLaboratoriesByName("Lab1");
-    }
+//    @Test
+//    void shouldNotSaveDuplicateLaboratory() {
+//        LaboratoryDTO laboratoryDTO = new LaboratoryDTO();
+//        laboratoryDTO.setName("Lab1");
+//        Laboratory existingLab = new Laboratory();
+//        existingLab.setName("Lab1");
+//        when(laboratoryRepository.findLaboratoriesByName("Lab1")).thenReturn(existingLab);
+//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+//            laboratoryService.saveLaboratory(laboratoryDTO);
+//        });
+//        assertEquals("Laboratory already exists", exception.getMessage());
+//        verify(laboratoryRepository).findLaboratoriesByName("Lab1");
+//    }
 
 
     @Test

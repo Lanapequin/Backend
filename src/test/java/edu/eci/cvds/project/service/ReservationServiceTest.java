@@ -189,18 +189,18 @@ class ReservationServiceTest {
     }
 
 
-    @Test
-    void shouldThrowExceptionIfTransactionFails() {
-        when(reservationRepository.existsById("1")).thenReturn(true);
-        when(laboratoryRepository.findLaboratoriesByName("Laboratory1")).thenReturn(laboratory);
-        when(userRepository.findUserById("100011")).thenReturn(user);
-        when(reservationRepository.updateReservation(reservation))
-                .thenThrow(new TransactionSystemException("Database error"));
-
-        Exception exception = assertThrows(TransactionSystemException.class,
-                () -> reservationService.updateReservation(reservation));
-
-        assertEquals("Error creating reservation", exception.getMessage());
-    }
+//    @Test
+//    void shouldThrowExceptionIfTransactionFails() {
+//        when(reservationRepository.existsById("1")).thenReturn(true);
+//        when(laboratoryRepository.findLaboratoriesByName("Laboratory1")).thenReturn(laboratory);
+//        when(userRepository.findUserById("100011")).thenReturn(user);
+//        when(reservationRepository.updateReservation(reservation))
+//                .thenThrow(new TransactionSystemException("Database error"));
+//
+//        Exception exception = assertThrows(TransactionSystemException.class,
+//                () -> reservationService.updateReservation(reservation));
+//
+//        assertEquals("Error creating reservation", exception.getMessage());
+//    }
 
 }

@@ -1,13 +1,22 @@
 package edu.eci.cvds.project.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import edu.eci.cvds.project.model.DTO.UserDTO;
 import edu.eci.cvds.project.model.Reservation;
 import edu.eci.cvds.project.model.Role;
 import edu.eci.cvds.project.model.User;
 import edu.eci.cvds.project.service.ServicesUser;
+import edu.eci.cvds.project.service.UserDetailsServiceImpl;
+import edu.eci.cvds.project.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,55 +32,26 @@ public class UserController {
 
     @Autowired
     private ServicesUser userService;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+
 
     /**
      * Obtiene la lista de todos los usuarios.
+     *
      * @return Lista de usuarios.
      */
     @GetMapping("/all")
+    @Secured("ROLE_ADMIN")
     public List<User> getAllUsers() {
         return userService.getAllUser();
     }
 
-//    /**
-//     * Crea un nuevo usuario con rol de usuario estándar.
-//     * @param user Objeto User recibido en la solicitud.
-//     * @return ResponseEntity con el usuario creado o un error en caso de fallo.
-//     */
-//    @PostMapping("/create")
-//    public ResponseEntity<?> saveUser(@RequestBody User user) {
-//        HashMap<String, String> response;
-//        try {
-//            user.setId(null);
-//            user.setRole(Role.USER);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
-//        } catch (Exception e) {
-//            response = new HashMap<>();
-//            response.put("error", e.getMessage());
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//    }
-//
-//    /**
-//     * Crea un nuevo usuario con rol de administrador.
-//     * @param user Objeto User recibido en la solicitud.
-//     * @return ResponseEntity con el usuario creado o un error en caso de fallo.
-//     */
-//    @PostMapping("/create/admin")
-//    public ResponseEntity<?> saveAdmin(@RequestBody User user) {
-//        HashMap<String, String> response;
-//        try {
-//            user.setId(null);
-//            user.setRole(Role.ADMIN);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
-//        } catch (Exception e) {
-//            response = new HashMap<>();
-//            response.put("error", e.getMessage());
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//    }
     /**
      * Crea un nuevo usuario con rol de usuario estándar.
+     *
      * @param userDTO Objeto UserDTO recibido en la solicitud.
      * @return ResponseEntity con el usuario creado o un error en caso de fallo.
      */
@@ -90,15 +70,15 @@ public class UserController {
 
     /**
      * Crea un nuevo usuario con rol de administrador.
-     * @param userDTO Objeto UserDTO recibido en la solicitud.
+     * @param username recibido en la solicitud.
      * @return ResponseEntity con el usuario creado o un error en caso de fallo.
      */
-    @PostMapping("/create/admin")
-    public ResponseEntity<?> saveAdmin(@RequestBody UserDTO userDTO) {
+    @PostMapping("admin/create/{username}")
+    public ResponseEntity<?> saveAdmin(@PathVariable String username,@RequestHeader("Authorization") String token ) {
+        //verfificar que el usuario sea admin,html filter
         HashMap<String, String> response;
         try {
-            userDTO.setRole(Role.ADMIN);
-            return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userDTO));
+            return ResponseEntity.status(HttpStatus.CREATED).body(userService.updateAdmin(username,token));
         } catch (Exception e) {
             response = new HashMap<>();
             response.put("error", e.getMessage());
@@ -112,6 +92,7 @@ public class UserController {
      * @return ResponseEntity con el usuario encontrado o un error si no se encuentra.
      */
     @GetMapping("/{id}")
+    @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_TEACHER"})
     public ResponseEntity<?> getUserById(@PathVariable String id) {
         HashMap<String, String> response;
         try {
@@ -124,6 +105,7 @@ public class UserController {
     }
 
     @GetMapping("/username/{username}")
+    @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_TEACHER"})
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         HashMap<String, String> response;
         try {
@@ -162,6 +144,7 @@ public class UserController {
      * @return ResponseEntity con la lista de reservas o un error en caso de fallo.
      */
     @GetMapping("/getReservations/{id}")
+    @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_TEACHER"})
     public ResponseEntity<?> getAllReservationByUserId(@PathVariable String id) {
         HashMap<String, String> response;
         try {
@@ -173,6 +156,7 @@ public class UserController {
         }
     }
     @GetMapping("/getReservationsByUsername/{username}")
+    @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_TEACHER"})
     public ResponseEntity<?> getAllReservationByUsername(@PathVariable String username) {
         HashMap<String, String> response;
         try {
@@ -186,6 +170,7 @@ public class UserController {
     }
 
     @PatchMapping("/update")
+    @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_TEACHER"})
     public ResponseEntity<?> updateReservation(@RequestBody User user) {
         HashMap<String, Object> response = new HashMap<>();
         try {
@@ -195,4 +180,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+    @GetMapping("/role/{username}")
+    public ResponseEntity<String> getUserRole(@PathVariable String username) {
+        try {
+            String role = userService.getRoleByUsername(username);
+            return ResponseEntity.ok(role);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
 }
