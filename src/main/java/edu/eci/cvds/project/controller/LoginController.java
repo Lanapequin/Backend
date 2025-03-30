@@ -1,15 +1,18 @@
 package edu.eci.cvds.project.controller;
 
 import edu.eci.cvds.project.exception.UserException;
-import edu.eci.cvds.project.exception.UserException;
-import edu.eci.cvds.project.service.LoginService;
+
 import edu.eci.cvds.project.service.ServicesLogin;
+import edu.eci.cvds.project.service.ServicesUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import edu.eci.cvds.project.exception.UserException;
+import edu.eci.cvds.project.service.LoginService;
+
 
 import java.util.Map; // Changed from HashMap to Map
 
@@ -19,12 +22,15 @@ public class LoginController {
 
     @Autowired
     private ServicesLogin loginService;
+    @Autowired
+    private ServicesUser userService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Map<String, String> credentials, HttpServletResponse response) {
         String username = credentials.get("username");
         String password = credentials.get("password");
         try {
+            userService.verifyReservations(username);
             String token = loginService.loginUser(username, password);
             Cookie cookie = new Cookie("session-token", token);
             cookie.setMaxAge(60 * 60 * 12);

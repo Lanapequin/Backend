@@ -10,6 +10,7 @@ import edu.eci.cvds.project.repository.UserMongoRepository;
 
 import edu.eci.cvds.project.repository.porsilas.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class UserService implements ServicesUser {
     @Autowired
     private ReservationMongoRepository reservationRepository;
 
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     /**
      * Guarda un nuevo usuario en el sistema.
      * @param userdto DTO que contiene la información del usuario.
@@ -35,7 +37,8 @@ public class UserService implements ServicesUser {
             throw new IllegalArgumentException("User already exists");}
         User user = new User();
         user.setUsername(userdto.getUsername());
-        user.setPassword(userdto.getPassword());
+        String hashedPassword = passwordEncoder.encode(userdto.getPassword());
+        user.setPassword(hashedPassword);
         user.setRole(userdto.getRole());
         user.setReservations(new ArrayList<Reservation>());
         return userRepository.saveUser(user);
@@ -135,12 +138,14 @@ public class UserService implements ServicesUser {
     public void verifyReservations(String username) {
         User user = userRepository.findUserByUsername(username);
         List<Reservation> reservations = user.getReservations();
-        for (Reservation reservation : reservations) {
-            LocalDateTime end=reservation.getEndDateTime();
-            if(end.isBefore(LocalDateTime.now())){
-                reservation.setStatus(false);
-                reservationRepository.updateReservation(reservation);
-                userRepository.updateUser(user);
+        if(reservations != null && !reservations.isEmpty()) {
+            for (Reservation reservation : reservations) {
+                LocalDateTime end = reservation.getEndDateTime();
+                if (end.isBefore(LocalDateTime.now())) {
+                    reservation.setStatus(false);
+                    reservationRepository.updateReservation(reservation);
+                    userRepository.updateUser(user);
+                }
             }
         }
     }
